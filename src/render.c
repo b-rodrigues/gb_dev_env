@@ -243,6 +243,30 @@ void render_next_piece(uint8_t next_type) {
     }
 }
 
+void render_line_clear_flicker(const uint8_t *full_rows, uint8_t num_full) {
+    uint8_t f, i, c, w;
+
+    for (f = 0; f < 3; f++) {
+        /* Flash ON: solid border tile */
+        for (i = 0; i < num_full; i++) {
+            uint8_t r = full_rows[i];
+            for (c = 0; c < BOARD_WIDTH; c++) {
+                set_bkg_tiles(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, 1, 1, &TILE_BORDER);
+            }
+        }
+        for (w = 0; w < 3; w++) vsync();
+
+        /* Flash OFF: blank tile */
+        for (i = 0; i < num_full; i++) {
+            uint8_t r = full_rows[i];
+            for (c = 0; c < BOARD_WIDTH; c++) {
+                set_bkg_tiles(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, 1, 1, &TILE_BLANK);
+            }
+        }
+        for (w = 0; w < 3; w++) vsync();
+    }
+}
+
 void render_ui(uint16_t score, uint16_t lines, uint8_t game_state) {
     render_print_number(13, 2, score, 5);
     render_print_number(13, 15, lines, 5);
