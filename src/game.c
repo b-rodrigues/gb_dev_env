@@ -1,4 +1,5 @@
 #include "game.h"
+#include "sound.h"
 #include <stdlib.h>
 
 Game g_game;
@@ -37,6 +38,7 @@ static void try_move_piece(int8_t dx, int8_t dy) {
     if (!piece_collides(&test)) {
         render_clear_piece(&g_game.current_piece);
         piece_copy(&g_game.current_piece, &test);
+        sound_play_move();
     }
 }
 
@@ -47,6 +49,7 @@ static void try_rotate_piece(int8_t dir) {
     if (!piece_collides(&test)) {
         render_clear_piece(&g_game.current_piece);
         piece_copy(&g_game.current_piece, &test);
+        sound_play_move();
     }
 }
 
@@ -68,6 +71,7 @@ static void try_hold_piece(void) {
 
     g_game.can_hold = 0;
     render_hold_piece(g_game.hold_type);
+    sound_play_move();
 
     if (piece_collides(&g_game.current_piece)) {
         g_game.state = GAME_STATE_GAME_OVER;
@@ -77,8 +81,10 @@ static void try_hold_piece(void) {
 static void lock_and_spawn(void) {
     uint8_t cleared;
     piece_lock(&g_game.current_piece);
+    sound_play_drop();
     cleared = board_check_and_clear_lines();
     if (cleared > 0) {
+        sound_play_clear();
         g_game.lines += cleared;
         g_game.score += cleared * 100;
         /* Increase fall speed slightly as score increases */
