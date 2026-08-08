@@ -1,0 +1,10 @@
+build/*
+!build/.gitkeep
+*.o
+*.gb
+*.map
+*.sym
+*.noi
+*.lst
+*.ihx
+*.cdb
