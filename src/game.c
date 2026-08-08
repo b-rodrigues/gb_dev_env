@@ -80,6 +80,20 @@ void game_update(void) {
         return;
     }
 
+    if (g_game.state == GAME_STATE_PAUSED) {
+        if (input_is_pressed(J_START)) {
+            g_game.state = GAME_STATE_PLAYING;
+            render_board();
+        }
+        return;
+    }
+
+    /* Start button pauses the game */
+    if (input_is_pressed(J_START)) {
+        g_game.state = GAME_STATE_PAUSED;
+        return;
+    }
+
     /* Process player input */
     if (input_is_pressed(J_LEFT)) {
         try_move_piece(-1, 0);
@@ -92,10 +106,6 @@ void game_update(void) {
     }
     if (input_is_pressed(J_B)) {
         try_rotate_piece(-1);
-    }
-    if (input_is_pressed(J_START)) {
-        game_init();
-        return;
     }
 
     /* Soft drop on Down press or hold */
@@ -133,5 +143,5 @@ void game_render(void) {
     if (g_game.state == GAME_STATE_PLAYING) {
         render_piece(&g_game.current_piece);
     }
-    render_ui(g_game.score, g_game.lines, g_game.state == GAME_STATE_GAME_OVER);
+    render_ui(g_game.score, g_game.lines, g_game.state);
 }

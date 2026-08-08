@@ -1,4 +1,5 @@
 #include "render.h"
+#include "game.h"
 #include <gb/gb.h>
 
 /* Custom 8x8 Tile Data (2bpp format, 16 bytes per tile) */
@@ -96,6 +97,8 @@ static void render_print_string(uint8_t x, uint8_t y, const char *str) {
             tile = 20 + (ch - 'A');
         } else if (ch == ':') {
             tile = 19;
+        } else if (ch == ' ') {
+            tile = 0;
         }
         set_bkg_tiles(x++, y, 1, 1, &tile);
     }
@@ -211,11 +214,13 @@ void render_next_piece(uint8_t next_type) {
     }
 }
 
-void render_ui(uint16_t score, uint16_t lines, uint8_t game_over) {
+void render_ui(uint16_t score, uint16_t lines, uint8_t game_state) {
     render_print_number(13, 2, score, 5);
     render_print_number(13, 6, lines, 5);
 
-    if (game_over) {
+    if (game_state == GAME_STATE_PAUSED) {
+        render_print_string(BOARD_OFFSET_X + 2, BOARD_OFFSET_Y + 7, " PAUSED ");
+    } else if (game_state == GAME_STATE_GAME_OVER) {
         render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "GAME OVER ");
         render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "PRESS STRT");
     }
