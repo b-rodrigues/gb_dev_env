@@ -10,6 +10,8 @@
 #define NO_PIECE 255
 
 typedef enum {
+    GAME_STATE_TITLE,
+    GAME_STATE_OPTIONS,
     GAME_STATE_PLAYING,
     GAME_STATE_PAUSED,
     GAME_STATE_GAME_OVER
@@ -17,6 +19,7 @@ typedef enum {
 
 typedef struct {
     GameState state;
+    uint8_t menu_index;
     Piece current_piece;
     uint8_t next_type;
     uint8_t hold_type;
@@ -31,6 +34,7 @@ typedef struct {
 extern Game g_game;
 
 void game_init(void);
+void game_start_play(void);
 void game_update(void);
 void game_render(void);
 

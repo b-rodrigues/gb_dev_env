@@ -43,6 +43,7 @@ static const Note CROCODILE_TUNE[] = {
 
 static uint8_t current_note_idx = 0;
 static uint8_t note_timer = 0;
+static uint8_t music_enabled = 1;
 
 void sound_init(void) {
     NR52_REG = 0x80; /* Enable Master Sound */
@@ -51,10 +52,27 @@ void sound_init(void) {
 
     current_note_idx = 0;
     note_timer = 0;
+    music_enabled = 1;
+}
+
+void sound_set_music_enabled(uint8_t enabled) {
+    music_enabled = enabled;
+    if (!music_enabled) {
+        NR22_REG = 0x00; /* Mute channel 2 immediately */
+        NR24_REG = 0x80;
+    }
+}
+
+uint8_t sound_get_music_enabled(void) {
+    return music_enabled;
 }
 
 void sound_update(void) {
     Note n;
+    if (!music_enabled) {
+        return;
+    }
+
     if (note_timer == 0) {
         n = CROCODILE_TUNE[current_note_idx];
         if (n.pitch == NOTE_REST) {

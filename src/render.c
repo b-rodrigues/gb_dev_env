@@ -81,7 +81,19 @@ static const unsigned char TILE_DATA[] = {
     /* 'W' */ 0x63,0x63, 0x63,0x63, 0x6B,0x6B, 0x7F,0x7F, 0x77,0x77, 0x63,0x63, 0x00,0x00, 0x00,0x00,
     /* 'X' */ 0x66,0x66, 0x66,0x66, 0x3C,0x3C, 0x18,0x18, 0x3C,0x3C, 0x66,0x66, 0x00,0x00, 0x00,0x00,
     /* 'Y' */ 0x66,0x66, 0x66,0x66, 0x3C,0x3C, 0x18,0x18, 0x18,0x18, 0x18,0x18, 0x00,0x00, 0x00,0x00,
-    /* 'Z' */ 0x7E,0x7E, 0x06,0x06, 0x0C,0x0C, 0x18,0x18, 0x30,0x30, 0x7E,0x7E, 0x00,0x00, 0x00,0x00
+    /* 'Z' */ 0x7E,0x7E, 0x06,0x06, 0x0C,0x0C, 0x18,0x18, 0x30,0x30, 0x7E,0x7E, 0x00,0x00, 0x00,0x00,
+
+    /* Tile 46: '>' (Cursor Arrow) */
+    0x00,0x00, 0x60,0x60, 0x38,0x38, 0x0E,0x0E, 0x38,0x38, 0x60,0x60, 0x00,0x00, 0x00,0x00,
+
+    /* Tile 47: '-' (Dash) */
+    0x00,0x00, 0x00,0x00, 0x00,0x00, 0x7E,0x7E, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00,
+
+    /* Tile 48: '!' */
+    0x18,0x18, 0x18,0x18, 0x18,0x18, 0x18,0x18, 0x00,0x00, 0x18,0x18, 0x00,0x00, 0x00,0x00,
+
+    /* Tile 49: '\'' (Apostrophe) */
+    0x18,0x18, 0x18,0x18, 0x30,0x30, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00
 };
 
 static const unsigned char TILE_BLANK = 0;
@@ -97,6 +109,14 @@ static void render_print_string(uint8_t x, uint8_t y, const char *str) {
             tile = 20 + (ch - 'A');
         } else if (ch == ':') {
             tile = 19;
+        } else if (ch == '>') {
+            tile = 46;
+        } else if (ch == '-') {
+            tile = 47;
+        } else if (ch == '!') {
+            tile = 48;
+        } else if (ch == '\'') {
+            tile = 49;
         } else if (ch == ' ') {
             tile = 0;
         }
@@ -115,18 +135,66 @@ static void render_print_number(uint8_t x, uint8_t y, uint16_t num, uint8_t digi
     render_print_string(x, y, buf);
 }
 
-void render_init(void) {
+void render_clear_screen(void) {
     uint8_t x, y;
-    
-    /* Load background tile patterns into VRAM starting at index 0 */
-    set_bkg_data(0, sizeof(TILE_DATA) / 16, TILE_DATA);
-
-    /* Clear background map */
     for (y = 0; y < 18; y++) {
         for (x = 0; x < 20; x++) {
             set_bkg_tiles(x, y, 1, 1, &TILE_BLANK);
         }
     }
+}
+
+void render_init(void) {
+    /* Load background tile patterns into VRAM starting at index 0 */
+    set_bkg_data(0, sizeof(TILE_DATA) / 16, TILE_DATA);
+    render_clear_screen();
+
+    SHOW_BKG;
+    DISPLAY_ON;
+}
+
+void render_title_screen(uint8_t menu_index) {
+    render_clear_screen();
+
+    /* Game Title */
+    render_print_string(1, 2, " BRUNO'S OPEN ");
+    render_print_string(1, 4, " SOURCE TETRIS");
+    render_print_string(1, 6, "    CLONE     ");
+
+    /* Border Line */
+    render_print_string(1, 8, "--------------");
+
+    /* Menu Items */
+    if (menu_index == 0) {
+        render_print_string(3, 10, "> START GAME");
+        render_print_string(3, 12, "  OPTIONS   ");
+    } else {
+        render_print_string(3, 10, "  START GAME");
+        render_print_string(3, 12, "> OPTIONS   ");
+    }
+
+    /* Footer Hint */
+    render_print_string(2, 15, "PRESS A OR STRT");
+}
+
+void render_options_screen(uint8_t music_enabled) {
+    render_clear_screen();
+
+    render_print_string(3, 3, "- OPTIONS -");
+    render_print_string(1, 5, "--------------");
+
+    if (music_enabled) {
+        render_print_string(3, 8, "  MUSIC: ON ");
+    } else {
+        render_print_string(3, 8, "  MUSIC: OFF");
+    }
+
+    render_print_string(2, 14, " PRESS B: BACK");
+}
+
+void render_playfield_layout(void) {
+    uint8_t x, y;
+    render_clear_screen();
 
     /* Draw border around playfield (x = 0 to 11, y = 0 to 17) */
     /* Top & bottom borders */
@@ -145,9 +213,6 @@ void render_init(void) {
     render_print_string(13, 4, "HOLD");
     render_print_string(13, 9, "NEXT");
     render_print_string(13, 14, "LINES");
-
-    SHOW_BKG;
-    DISPLAY_ON;
 }
 
 void render_board(void) {
@@ -268,8 +333,10 @@ void render_line_clear_flicker(const uint8_t *full_rows, uint8_t num_full) {
 }
 
 void render_ui(uint16_t score, uint16_t lines, uint8_t game_state) {
-    render_print_number(13, 2, score, 5);
-    render_print_number(13, 15, lines, 5);
+    if (game_state == GAME_STATE_PLAYING || game_state == GAME_STATE_PAUSED || game_state == GAME_STATE_GAME_OVER) {
+        render_print_number(13, 2, score, 5);
+        render_print_number(13, 15, lines, 5);
+    }
 
     if (game_state == GAME_STATE_PAUSED) {
         render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 5, "  PAUSED  ");

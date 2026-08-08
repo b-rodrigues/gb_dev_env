@@ -11,13 +11,20 @@ static uint8_t next_random_piece(void) {
 }
 
 void game_init(void) {
+    g_game.state = GAME_STATE_TITLE;
+    g_game.menu_index = 0;
+    g_game.random_seed = 42;
+    render_title_screen(g_game.menu_index);
+}
+
+void game_start_play(void) {
+    render_playfield_layout();
     board_init();
     g_game.state = GAME_STATE_PLAYING;
     g_game.score = 0;
     g_game.lines = 0;
     g_game.fall_timer = 0;
     g_game.fall_speed = 30; /* Fall every 30 frames (~0.5s) */
-    g_game.random_seed = 42;
 
     g_game.hold_type = NO_PIECE;
     g_game.can_hold = 1;
@@ -132,9 +139,48 @@ static void hard_drop_piece(void) {
 void game_update(void) {
     g_game.random_seed++;
 
+    if (g_game.state == GAME_STATE_TITLE) {
+        if (input_is_pressed(J_UP) || input_is_pressed(J_DOWN)) {
+            g_game.menu_index ^= 1;
+            sound_play_move();
+            render_title_screen(g_game.menu_index);
+            return;
+        }
+        if (input_is_pressed(J_A) || input_is_pressed(J_START)) {
+            sound_play_move();
+            if (g_game.menu_index == 0) {
+                game_start_play();
+            } else {
+                g_game.state = GAME_STATE_OPTIONS;
+                render_options_screen(sound_get_music_enabled());
+            }
+            return;
+        }
+        return;
+    }
+
+    if (g_game.state == GAME_STATE_OPTIONS) {
+        if (input_is_pressed(J_UP) || input_is_pressed(J_DOWN) || 
+            input_is_pressed(J_LEFT) || input_is_pressed(J_RIGHT) || 
+            input_is_pressed(J_A)) {
+            sound_set_music_enabled(!sound_get_music_enabled());
+            sound_play_move();
+            render_options_screen(sound_get_music_enabled());
+            return;
+        }
+        if (input_is_pressed(J_B) || input_is_pressed(J_START)) {
+            sound_play_move();
+            g_game.state = GAME_STATE_TITLE;
+            render_title_screen(g_game.menu_index);
+            return;
+        }
+        return;
+    }
+
     if (g_game.state == GAME_STATE_GAME_OVER) {
-        if (input_is_pressed(J_START) || input_is_pressed(J_SELECT)) {
-            game_init();
+        if (input_is_pressed(J_START) || input_is_pressed(J_SELECT) || input_is_pressed(J_A)) {
+            g_game.state = GAME_STATE_TITLE;
+            render_title_screen(g_game.menu_index);
         }
         return;
     }
@@ -148,7 +194,8 @@ void game_update(void) {
         }
         /* Press Select to restart */
         if (input_is_pressed(J_SELECT)) {
-            game_init();
+            g_game.state = GAME_STATE_TITLE;
+            render_title_screen(g_game.menu_index);
             return;
         }
         return;
