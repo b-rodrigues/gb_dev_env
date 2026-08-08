@@ -19,24 +19,24 @@ typedef struct {
 /* "Ah! Les crocodiles" melody notes */
 static const Note CROCODILE_TUNE[] = {
     /* "Un cro-co-dile, en par-tant pour la guerre" */
-    {NOTE_C4, 10}, {NOTE_C4, 10}, {NOTE_C4, 10}, {NOTE_C4, 10},
-    {NOTE_D4, 10}, {NOTE_E4, 10}, {NOTE_E4, 10}, {NOTE_E4, 10},
-    {NOTE_F4, 10}, {NOTE_G4, 10}, {NOTE_G4, 10}, {NOTE_G4, 10},
-    {NOTE_G4, 10}, {NOTE_F4, 10}, {NOTE_E4, 10}, {NOTE_D4, 10},
+    {NOTE_C4, 15}, {NOTE_C4, 15}, {NOTE_C4, 15}, {NOTE_C4, 15},
+    {NOTE_D4, 15}, {NOTE_E4, 15}, {NOTE_E4, 15}, {NOTE_E4, 15},
+    {NOTE_F4, 15}, {NOTE_G4, 15}, {NOTE_G4, 15}, {NOTE_G4, 15},
+    {NOTE_G4, 15}, {NOTE_F4, 15}, {NOTE_E4, 15}, {NOTE_D4, 15},
 
     /* "Di-sait au re-voir à ses pe-tits en-fants" */
-    {NOTE_E4, 10}, {NOTE_F4, 10}, {NOTE_E4, 10}, {NOTE_D4, 10},
-    {NOTE_C4, 20}, {NOTE_REST, 10},
+    {NOTE_E4, 15}, {NOTE_F4, 15}, {NOTE_E4, 15}, {NOTE_D4, 15},
+    {NOTE_C4, 30}, {NOTE_REST, 15},
 
     /* "Ah! les cro-co, les cro-co, les cro-co-diles" */
-    {NOTE_G4, 10}, {NOTE_C4, 10}, {NOTE_C4, 10}, {NOTE_C4, 10},
-    {NOTE_E4, 10}, {NOTE_E4, 10}, {NOTE_E4, 10}, {NOTE_G4, 10},
-    {NOTE_G4, 10}, {NOTE_G4, 10},
+    {NOTE_G4, 15}, {NOTE_C4, 15}, {NOTE_C4, 15}, {NOTE_C4, 15},
+    {NOTE_E4, 15}, {NOTE_E4, 15}, {NOTE_E4, 15}, {NOTE_G4, 15},
+    {NOTE_G4, 15}, {NOTE_G4, 15},
 
     /* "Sur les bords du Nil, ils ont dis-pa-ru, n'en par-lons plus!" */
-    {NOTE_G4, 10}, {NOTE_F4, 10}, {NOTE_E4, 10}, {NOTE_D4, 10},
-    {NOTE_E4, 10}, {NOTE_F4, 10}, {NOTE_E4, 10}, {NOTE_D4, 10},
-    {NOTE_C4, 30}, {NOTE_REST, 20}
+    {NOTE_G4, 15}, {NOTE_F4, 15}, {NOTE_E4, 15}, {NOTE_D4, 15},
+    {NOTE_E4, 15}, {NOTE_F4, 15}, {NOTE_E4, 15}, {NOTE_D4, 15},
+    {NOTE_C4, 45}, {NOTE_REST, 30}
 };
 
 #define TUNE_LENGTH 40
@@ -53,6 +53,10 @@ void sound_init(void) {
     current_note_idx = 0;
     note_timer = 0;
     music_enabled = 1;
+
+    CRITICAL {
+        add_VBL(sound_update);
+    }
 }
 
 void sound_set_music_enabled(uint8_t enabled) {

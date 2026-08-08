@@ -13,7 +13,6 @@ void main(void) {
     while (1) {
         input_update();
         game_update();
-        sound_update();
         game_render();
         render_vsync();
     }
