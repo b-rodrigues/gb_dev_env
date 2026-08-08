@@ -142,8 +142,9 @@ void render_init(void) {
 
     /* Draw Side Panel Headers */
     render_print_string(13, 1, "SCORE");
-    render_print_string(13, 5, "LINES");
+    render_print_string(13, 4, "HOLD");
     render_print_string(13, 9, "NEXT");
+    render_print_string(13, 14, "LINES");
 
     SHOW_BKG;
     DISPLAY_ON;
@@ -188,6 +189,34 @@ void render_clear_piece(const Piece *p) {
     }
 }
 
+void render_hold_piece(uint8_t hold_type) {
+    uint8_t r, c;
+    Piece dummy;
+    int8_t bx[4], by[4];
+    uint8_t i;
+    unsigned char tile;
+
+    /* Clear 5x3 area at (x=13, y=5) */
+    for (r = 0; r < 3; r++) {
+        for (c = 0; c < 5; c++) {
+            set_bkg_tiles(13 + c, 5 + r, 1, 1, &TILE_BLANK);
+        }
+    }
+
+    if (hold_type == NO_PIECE) return;
+
+    dummy.type = hold_type;
+    dummy.rotation = 0;
+    dummy.x = 0;
+    dummy.y = 0;
+    piece_get_blocks(&dummy, bx, by);
+
+    tile = hold_type + 1;
+    for (i = 0; i < 4; i++) {
+        set_bkg_tiles(14 + bx[i], 5 + by[i], 1, 1, &tile);
+    }
+}
+
 void render_next_piece(uint8_t next_type) {
     uint8_t r, c;
     Piece dummy;
@@ -195,10 +224,10 @@ void render_next_piece(uint8_t next_type) {
     uint8_t i;
     unsigned char tile;
 
-    /* Clear 5x4 next piece area at (x=13, y=11) */
-    for (r = 0; r < 4; r++) {
+    /* Clear 5x3 area at (x=13, y=10) */
+    for (r = 0; r < 3; r++) {
         for (c = 0; c < 5; c++) {
-            set_bkg_tiles(13 + c, 11 + r, 1, 1, &TILE_BLANK);
+            set_bkg_tiles(13 + c, 10 + r, 1, 1, &TILE_BLANK);
         }
     }
 
@@ -210,13 +239,13 @@ void render_next_piece(uint8_t next_type) {
 
     tile = next_type + 1;
     for (i = 0; i < 4; i++) {
-        set_bkg_tiles(14 + bx[i], 11 + by[i], 1, 1, &tile);
+        set_bkg_tiles(14 + bx[i], 10 + by[i], 1, 1, &tile);
     }
 }
 
 void render_ui(uint16_t score, uint16_t lines, uint8_t game_state) {
     render_print_number(13, 2, score, 5);
-    render_print_number(13, 6, lines, 5);
+    render_print_number(13, 15, lines, 5);
 
     if (game_state == GAME_STATE_PAUSED) {
         render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 5, "  PAUSED  ");

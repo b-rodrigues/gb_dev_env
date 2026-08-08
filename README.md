@@ -51,4 +51,5 @@ build/game.gb
 | **Down** | Soft drop piece |
 | **A** | Rotate piece clockwise |
 | **B** | Rotate piece counter-clockwise |
-| **Start** | Restart game |
+| **Select** | Hold / swap Tetromino (once per piece drop) / Restart on Pause |
+| **Start** | Pause / Resume game |

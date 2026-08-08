@@ -7,6 +7,8 @@
 #include "input.h"
 #include "render.h"
 
+#define NO_PIECE 255
+
 typedef enum {
     GAME_STATE_PLAYING,
     GAME_STATE_PAUSED,
@@ -17,6 +19,8 @@ typedef struct {
     GameState state;
     Piece current_piece;
     uint8_t next_type;
+    uint8_t hold_type;
+    uint8_t can_hold;
     uint16_t score;
     uint16_t lines;
     uint8_t fall_timer;

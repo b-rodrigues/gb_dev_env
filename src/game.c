@@ -18,10 +18,14 @@ void game_init(void) {
     g_game.fall_speed = 30; /* Fall every 30 frames (~0.5s) */
     g_game.random_seed = 42;
 
+    g_game.hold_type = NO_PIECE;
+    g_game.can_hold = 1;
+
     g_game.next_type = next_random_piece();
     piece_spawn(&g_game.current_piece, next_random_piece());
 
     render_board();
+    render_hold_piece(g_game.hold_type);
     render_next_piece(g_game.next_type);
 }
 
@@ -46,6 +50,30 @@ static void try_rotate_piece(int8_t dir) {
     }
 }
 
+static void try_hold_piece(void) {
+    if (!g_game.can_hold) return;
+
+    render_clear_piece(&g_game.current_piece);
+
+    if (g_game.hold_type == NO_PIECE) {
+        g_game.hold_type = g_game.current_piece.type;
+        piece_spawn(&g_game.current_piece, g_game.next_type);
+        g_game.next_type = next_random_piece();
+        render_next_piece(g_game.next_type);
+    } else {
+        uint8_t temp = g_game.current_piece.type;
+        piece_spawn(&g_game.current_piece, g_game.hold_type);
+        g_game.hold_type = temp;
+    }
+
+    g_game.can_hold = 0;
+    render_hold_piece(g_game.hold_type);
+
+    if (piece_collides(&g_game.current_piece)) {
+        g_game.state = GAME_STATE_GAME_OVER;
+    }
+}
+
 static void lock_and_spawn(void) {
     uint8_t cleared;
     piece_lock(&g_game.current_piece);
@@ -59,6 +87,9 @@ static void lock_and_spawn(void) {
         }
     }
     render_board();
+
+    /* Re-enable hold feature for the next falling piece */
+    g_game.can_hold = 1;
 
     /* Spawn new piece using next_type, then generate new next_type */
     piece_spawn(&g_game.current_piece, g_game.next_type);
@@ -98,6 +129,12 @@ void game_update(void) {
     /* Start button pauses the game */
     if (input_is_pressed(J_START)) {
         g_game.state = GAME_STATE_PAUSED;
+        return;
+    }
+
+    /* Select button holds/swaps the current piece */
+    if (input_is_pressed(J_SELECT)) {
+        try_hold_piece();
         return;
     }
 
