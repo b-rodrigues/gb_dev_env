@@ -1,7 +1,7 @@
 build/*
 !build/.gitkeep
+!build/game.gb
 *.o
-*.gb
 *.map
 *.sym
 *.noi
