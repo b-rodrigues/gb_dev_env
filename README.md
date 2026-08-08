@@ -46,9 +46,10 @@ build/game.gb
 
 | Button | Action |
 | --- | --- |
+| **Up** | Hard drop piece (instantly drop to bottom) |
+| **Down** | Soft drop piece |
 | **Left** | Move piece left |
 | **Right** | Move piece right |
-| **Down** | Soft drop piece |
 | **A** | Rotate piece clockwise |
 | **B** | Rotate piece counter-clockwise |
 | **Select** | Hold / swap Tetromino (once per piece drop) / Restart on Pause |

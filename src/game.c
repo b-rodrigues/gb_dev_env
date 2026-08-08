@@ -107,6 +107,28 @@ static void lock_and_spawn(void) {
     }
 }
 
+static void hard_drop_piece(void) {
+    uint8_t drop_distance = 0;
+    Piece test;
+    piece_copy(&test, &g_game.current_piece);
+
+    while (1) {
+        test.y += 1;
+        if (piece_collides(&test)) {
+            break;
+        }
+        drop_distance++;
+    }
+
+    if (drop_distance > 0) {
+        render_clear_piece(&g_game.current_piece);
+        g_game.current_piece.y += drop_distance;
+        g_game.score += drop_distance;
+    }
+
+    lock_and_spawn();
+}
+
 void game_update(void) {
     g_game.random_seed++;
 
@@ -141,6 +163,12 @@ void game_update(void) {
     /* Select button holds/swaps the current piece */
     if (input_is_pressed(J_SELECT)) {
         try_hold_piece();
+        return;
+    }
+
+    /* Up button triggers hard drop */
+    if (input_is_pressed(J_UP)) {
+        hard_drop_piece();
         return;
     }
 
