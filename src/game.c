@@ -74,16 +74,23 @@ void game_update(void) {
     g_game.random_seed++;
 
     if (g_game.state == GAME_STATE_GAME_OVER) {
-        if (input_is_pressed(J_START)) {
+        if (input_is_pressed(J_START) || input_is_pressed(J_SELECT)) {
             game_init();
         }
         return;
     }
 
     if (g_game.state == GAME_STATE_PAUSED) {
+        /* Press Start to resume */
         if (input_is_pressed(J_START)) {
             g_game.state = GAME_STATE_PLAYING;
             render_board();
+            return;
+        }
+        /* Press Select to restart */
+        if (input_is_pressed(J_SELECT)) {
+            game_init();
+            return;
         }
         return;
     }

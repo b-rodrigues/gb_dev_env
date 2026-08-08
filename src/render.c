@@ -219,7 +219,9 @@ void render_ui(uint16_t score, uint16_t lines, uint8_t game_state) {
     render_print_number(13, 6, lines, 5);
 
     if (game_state == GAME_STATE_PAUSED) {
-        render_print_string(BOARD_OFFSET_X + 2, BOARD_OFFSET_Y + 7, " PAUSED ");
+        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 5, "  PAUSED  ");
+        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "STRT RESUM");
+        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "SEL RESTAR");
     } else if (game_state == GAME_STATE_GAME_OVER) {
         render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "GAME OVER ");
         render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "PRESS STRT");
