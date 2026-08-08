@@ -15,6 +15,7 @@ typedef enum {
 typedef struct {
     GameState state;
     Piece current_piece;
+    uint8_t next_type;
     uint16_t score;
     uint16_t lines;
     uint8_t fall_timer;

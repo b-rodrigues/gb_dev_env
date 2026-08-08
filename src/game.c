@@ -18,8 +18,11 @@ void game_init(void) {
     g_game.fall_speed = 30; /* Fall every 30 frames (~0.5s) */
     g_game.random_seed = 42;
 
+    g_game.next_type = next_random_piece();
     piece_spawn(&g_game.current_piece, next_random_piece());
+
     render_board();
+    render_next_piece(g_game.next_type);
 }
 
 static void try_move_piece(int8_t dx, int8_t dy) {
@@ -57,8 +60,11 @@ static void lock_and_spawn(void) {
     }
     render_board();
 
-    /* Spawn new piece */
-    piece_spawn(&g_game.current_piece, next_random_piece());
+    /* Spawn new piece using next_type, then generate new next_type */
+    piece_spawn(&g_game.current_piece, g_game.next_type);
+    g_game.next_type = next_random_piece();
+    render_next_piece(g_game.next_type);
+
     if (piece_collides(&g_game.current_piece)) {
         g_game.state = GAME_STATE_GAME_OVER;
     }

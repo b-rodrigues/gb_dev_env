@@ -5,7 +5,7 @@
 
 #define BOARD_WIDTH  10
 #define BOARD_HEIGHT 16
-#define BOARD_OFFSET_X 5
+#define BOARD_OFFSET_X 1
 #define BOARD_OFFSET_Y 1
 
 extern uint8_t board[BOARD_HEIGHT][BOARD_WIDTH];
