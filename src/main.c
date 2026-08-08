@@ -7,6 +7,7 @@
 void main(void) {
     sound_init();
     render_init();
+    input_init();
     game_init();
 
     while (1) {

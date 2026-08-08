@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <stdint.h>
+#include <gb/gb.h>
 #include "board.h"
 #include "piece.h"
 #include "input.h"

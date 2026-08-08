@@ -1,20 +1,23 @@
 #include "input.h"
+#include <gb/gb.h>
 
-uint8_t joy_state = 0;
-uint8_t joy_pressed = 0;
+static uint8_t pad_state;
+static uint8_t prev_pad_state;
 
-static uint8_t joy_prev = 0;
+void input_init(void) {
+    pad_state = joypad();
+    prev_pad_state = pad_state;
+}
 
 void input_update(void) {
-    joy_state = joypad();
-    joy_pressed = joy_state & ~joy_prev;
-    joy_prev = joy_state;
+    prev_pad_state = pad_state;
+    pad_state = joypad();
 }
 
-uint8_t input_is_down(uint8_t mask) {
-    return (joy_state & mask) != 0;
+uint8_t input_is_down(uint8_t button) {
+    return (pad_state & button) != 0;
 }
 
-uint8_t input_is_pressed(uint8_t mask) {
-    return (joy_pressed & mask) != 0;
+uint8_t input_is_pressed(uint8_t button) {
+    return (pad_state & button) != 0 && (prev_pad_state & button) == 0;
 }
