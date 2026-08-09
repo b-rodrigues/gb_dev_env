@@ -143,7 +143,7 @@ void game_update(void) {
         if (input_is_pressed(J_UP) || input_is_pressed(J_DOWN)) {
             g_game.menu_index ^= 1;
             sound_play_move();
-            render_title_screen(g_game.menu_index);
+            render_title_menu_update(g_game.menu_index);
             return;
         }
         if (input_is_pressed(J_A) || input_is_pressed(J_START)) {

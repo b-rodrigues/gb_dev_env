@@ -199,6 +199,16 @@ void render_init(void) {
     DISPLAY_ON;
 }
 
+void render_title_menu_update(uint8_t menu_index) {
+    if (menu_index == 0) {
+        render_print_string_pal(3, 10, "> START GAME", 4);
+        render_print_string_pal(3, 12, "  OPTIONS   ", 0);
+    } else {
+        render_print_string_pal(3, 10, "  START GAME", 0);
+        render_print_string_pal(3, 12, "> OPTIONS   ", 4);
+    }
+}
+
 void render_title_screen(uint8_t menu_index) {
     render_clear_screen();
 
@@ -211,13 +221,7 @@ void render_title_screen(uint8_t menu_index) {
     render_print_string_pal(1, 8, "--------------", 0);
 
     /* Menu Items */
-    if (menu_index == 0) {
-        render_print_string_pal(3, 10, "> START GAME", 4);
-        render_print_string_pal(3, 12, "  OPTIONS   ", 0);
-    } else {
-        render_print_string_pal(3, 10, "  START GAME", 0);
-        render_print_string_pal(3, 12, "> OPTIONS   ", 4);
-    }
+    render_title_menu_update(menu_index);
 
     /* Footer Hint */
     render_print_string_pal(2, 15, "PRESS A OR STRT", 0);

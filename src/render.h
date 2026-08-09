@@ -8,6 +8,7 @@
 void render_init(void);
 void render_clear_screen(void);
 void render_title_screen(uint8_t menu_index);
+void render_title_menu_update(uint8_t menu_index);
 void render_options_screen(uint8_t music_enabled);
 void render_playfield_layout(void);
 void render_board(void);
