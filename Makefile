@@ -26,7 +26,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) -c -I$(SRC_DIR) -o $@ $<
 
 $(TARGET): $(OBJS) | $(BUILD_DIR)
-	$(CC) -no-crt -o $@ $(GBDKDIR)lib/gb/crt0.o $(OBJS) $(GBDKDIR)lib/gb/gb.lib $(GBDKDIR)lib/sm83/sm83.lib
+	$(CC) -no-crt -Wm-yc -o $@ $(GBDKDIR)lib/gb/crt0.o $(OBJS) $(GBDKDIR)lib/gb/gb.lib $(GBDKDIR)lib/sm83/sm83.lib
 
 run: $(TARGET)
 	@if [ -z "$(EMULATOR)" ]; then \
@@ -39,7 +39,7 @@ run: $(TARGET)
 test: $(TARGET)
 	@echo "Validating Game Boy ROM header..."
 	@if command -v $(RGBFIX) >/dev/null 2>&1; then \
-		$(RGBFIX) -v $(TARGET); \
+		$(RGBFIX) -v -C -t "BRUNOTETRIS" $(TARGET); \
 	else \
 		test -s $(TARGET); \
 	fi

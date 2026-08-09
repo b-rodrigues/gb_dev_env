@@ -36,7 +36,7 @@ if command -v xvfb-run >/dev/null 2>&1 && command -v import >/dev/null 2>&1; the
     xvfb-run --auto-servernum --server-args="-screen 0 640x480x24" bash -c "
         $EMULATOR \"$ROM_PATH\" &
         EMU_PID=\$!
-        sleep 2
+        sleep 4
         import -window root \"$OUTPUT_IMAGE\" || true
         kill -9 \$EMU_PID 2>/dev/null || true
     "

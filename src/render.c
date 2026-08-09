@@ -1,6 +1,7 @@
 #include "render.h"
 #include "game.h"
 #include <gb/gb.h>
+#include <gb/cgb.h>
 
 /* Custom 8x8 Tile Data (2bpp format, 16 bytes per tile) */
 static const unsigned char TILE_DATA[] = {
@@ -96,10 +97,46 @@ static const unsigned char TILE_DATA[] = {
     0x18,0x18, 0x18,0x18, 0x30,0x30, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00, 0x00,0x00
 };
 
+/* CGB Background Color Palettes (8 palettes x 4 RGB555 colors) */
+static const palette_color_t CGB_BG_PALETTES[] = {
+    /* Palette 0: Background / Border / Frame (Cream/Navy) */
+    RGB(28, 29, 24), RGB(12, 20, 28), RGB(4, 10, 18), RGB(1, 2, 6),
+
+    /* Palette 1: I-Piece (Cyan / Turquoise) */
+    RGB(28, 29, 24), RGB(8, 30, 31),  RGB(2, 18, 22), RGB(0, 8, 10),
+
+    /* Palette 2: J-Piece (Royal Blue) */
+    RGB(28, 29, 24), RGB(8, 16, 31),  RGB(2, 8, 22),  RGB(0, 3, 10),
+
+    /* Palette 3: L-Piece (Vibrant Orange) */
+    RGB(28, 29, 24), RGB(31, 16, 2),  RGB(22, 8, 0),  RGB(8, 2, 0),
+
+    /* Palette 4: O-Piece (Bright Gold/Yellow) */
+    RGB(28, 29, 24), RGB(31, 28, 4),  RGB(24, 18, 0), RGB(10, 6, 0),
+
+    /* Palette 5: S-Piece (Lime Green) */
+    RGB(28, 29, 24), RGB(12, 30, 6),  RGB(4, 18, 2),  RGB(1, 8, 0),
+
+    /* Palette 6: T-Piece (Vibrant Purple/Magenta) */
+    RGB(28, 29, 24), RGB(24, 8, 28),  RGB(14, 2, 18), RGB(6, 0, 8),
+
+    /* Palette 7: Z-Piece / Crimson Red */
+    RGB(28, 29, 24), RGB(31, 6, 8),   RGB(20, 2, 4),  RGB(8, 0, 1)
+};
+
 static const unsigned char TILE_BLANK = 0;
 static const unsigned char TILE_BORDER = 8;
 
-static void render_print_string(uint8_t x, uint8_t y, const char *str) {
+static void set_tile_with_palette(uint8_t x, uint8_t y, unsigned char tile, uint8_t palette) {
+    if (_cpu == CGB_TYPE) {
+        VBK_REG = 1;
+        set_bkg_tiles(x, y, 1, 1, &palette);
+        VBK_REG = 0;
+    }
+    set_bkg_tiles(x, y, 1, 1, &tile);
+}
+
+static void render_print_string_pal(uint8_t x, uint8_t y, const char *str, uint8_t palette) {
     while (*str) {
         char ch = *str++;
         unsigned char tile = 0;
@@ -120,8 +157,12 @@ static void render_print_string(uint8_t x, uint8_t y, const char *str) {
         } else if (ch == ' ') {
             tile = 0;
         }
-        set_bkg_tiles(x++, y, 1, 1, &tile);
+        set_tile_with_palette(x++, y, tile, palette);
     }
+}
+
+static void render_print_string(uint8_t x, uint8_t y, const char *str) {
+    render_print_string_pal(x, y, str, 0);
 }
 
 static void render_print_number(uint8_t x, uint8_t y, uint16_t num, uint8_t digits) {
@@ -139,7 +180,7 @@ void render_clear_screen(void) {
     uint8_t x, y;
     for (y = 0; y < 18; y++) {
         for (x = 0; x < 20; x++) {
-            set_bkg_tiles(x, y, 1, 1, &TILE_BLANK);
+            set_tile_with_palette(x, y, TILE_BLANK, 0);
         }
     }
 }
@@ -147,6 +188,11 @@ void render_clear_screen(void) {
 void render_init(void) {
     /* Load background tile patterns into VRAM starting at index 0 */
     set_bkg_data(0, sizeof(TILE_DATA) / 16, TILE_DATA);
+
+    if (_cpu == CGB_TYPE) {
+        set_bkg_palette(0, 8, CGB_BG_PALETTES);
+    }
+
     render_clear_screen();
 
     SHOW_BKG;
@@ -156,40 +202,40 @@ void render_init(void) {
 void render_title_screen(uint8_t menu_index) {
     render_clear_screen();
 
-    /* Game Title */
-    render_print_string(1, 2, " BRUNO'S OPEN ");
-    render_print_string(1, 4, " SOURCE TETRIS");
-    render_print_string(1, 6, "    CLONE     ");
+    /* Game Title with vibrant colors */
+    render_print_string_pal(1, 2, " BRUNO'S OPEN ", 3);
+    render_print_string_pal(1, 4, " SOURCE TETRIS", 1);
+    render_print_string_pal(1, 6, "    CLONE     ", 4);
 
     /* Border Line */
-    render_print_string(1, 8, "--------------");
+    render_print_string_pal(1, 8, "--------------", 0);
 
     /* Menu Items */
     if (menu_index == 0) {
-        render_print_string(3, 10, "> START GAME");
-        render_print_string(3, 12, "  OPTIONS   ");
+        render_print_string_pal(3, 10, "> START GAME", 4);
+        render_print_string_pal(3, 12, "  OPTIONS   ", 0);
     } else {
-        render_print_string(3, 10, "  START GAME");
-        render_print_string(3, 12, "> OPTIONS   ");
+        render_print_string_pal(3, 10, "  START GAME", 0);
+        render_print_string_pal(3, 12, "> OPTIONS   ", 4);
     }
 
     /* Footer Hint */
-    render_print_string(2, 15, "PRESS A OR STRT");
+    render_print_string_pal(2, 15, "PRESS A OR STRT", 0);
 }
 
 void render_options_screen(uint8_t music_enabled) {
     render_clear_screen();
 
-    render_print_string(3, 3, "- OPTIONS -");
-    render_print_string(1, 5, "--------------");
+    render_print_string_pal(3, 3, "- OPTIONS -", 1);
+    render_print_string_pal(1, 5, "--------------", 0);
 
     if (music_enabled) {
-        render_print_string(3, 8, "  MUSIC: ON ");
+        render_print_string_pal(3, 8, "  MUSIC: ON ", 5);
     } else {
-        render_print_string(3, 8, "  MUSIC: OFF");
+        render_print_string_pal(3, 8, "  MUSIC: OFF", 7);
     }
 
-    render_print_string(2, 14, " PRESS B: BACK");
+    render_print_string_pal(2, 14, " PRESS B: BACK", 0);
 }
 
 void render_playfield_layout(void) {
@@ -199,28 +245,33 @@ void render_playfield_layout(void) {
     /* Draw border around playfield (x = 0 to 11, y = 0 to 17) */
     /* Top & bottom borders */
     for (x = BOARD_OFFSET_X - 1; x <= BOARD_OFFSET_X + BOARD_WIDTH; x++) {
-        set_bkg_tiles(x, BOARD_OFFSET_Y - 1, 1, 1, &TILE_BORDER);
-        set_bkg_tiles(x, BOARD_OFFSET_Y + BOARD_HEIGHT, 1, 1, &TILE_BORDER);
+        set_tile_with_palette(x, BOARD_OFFSET_Y - 1, TILE_BORDER, 0);
+        set_tile_with_palette(x, BOARD_OFFSET_Y + BOARD_HEIGHT, TILE_BORDER, 0);
     }
     /* Left & right borders */
     for (y = BOARD_OFFSET_Y; y < BOARD_OFFSET_Y + BOARD_HEIGHT; y++) {
-        set_bkg_tiles(BOARD_OFFSET_X - 1, y, 1, 1, &TILE_BORDER);
-        set_bkg_tiles(BOARD_OFFSET_X + BOARD_WIDTH, y, 1, 1, &TILE_BORDER);
+        set_tile_with_palette(BOARD_OFFSET_X - 1, y, TILE_BORDER, 0);
+        set_tile_with_palette(BOARD_OFFSET_X + BOARD_WIDTH, y, TILE_BORDER, 0);
     }
 
     /* Draw Side Panel Headers */
-    render_print_string(13, 1, "SCORE");
-    render_print_string(13, 4, "HOLD");
-    render_print_string(13, 9, "NEXT");
-    render_print_string(13, 14, "LINES");
+    render_print_string_pal(13, 1, "SCORE", 0);
+    render_print_string_pal(13, 4, "HOLD", 0);
+    render_print_string_pal(13, 9, "NEXT", 0);
+    render_print_string_pal(13, 14, "LINES", 0);
 }
 
 void render_board(void) {
     uint8_t r, c;
     for (r = 0; r < BOARD_HEIGHT; r++) {
         for (c = 0; c < BOARD_WIDTH; c++) {
-            unsigned char tile = board[r][c];
-            set_bkg_tiles(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, 1, 1, &tile);
+            unsigned char cell = board[r][c];
+            if (cell == 0) {
+                set_tile_with_palette(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, TILE_BLANK, 0);
+            } else {
+                uint8_t palette = cell; /* Cell values 1..7 map to CGB Palettes 1..7 */
+                set_tile_with_palette(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, cell, palette);
+            }
         }
     }
 }
@@ -229,11 +280,12 @@ void render_piece(const Piece *p) {
     int8_t bx[4], by[4];
     uint8_t i;
     unsigned char tile = p->type + 1;
+    uint8_t palette = p->type + 1;
 
     piece_get_blocks(p, bx, by);
     for (i = 0; i < 4; i++) {
         if (by[i] >= 0 && by[i] < BOARD_HEIGHT && bx[i] >= 0 && bx[i] < BOARD_WIDTH) {
-            set_bkg_tiles(BOARD_OFFSET_X + bx[i], BOARD_OFFSET_Y + by[i], 1, 1, &tile);
+            set_tile_with_palette(BOARD_OFFSET_X + bx[i], BOARD_OFFSET_Y + by[i], tile, palette);
         }
     }
 }
@@ -241,14 +293,13 @@ void render_piece(const Piece *p) {
 void render_clear_piece(const Piece *p) {
     int8_t bx[4], by[4];
     uint8_t i;
-    unsigned char tile = 0;
 
     piece_get_blocks(p, bx, by);
     for (i = 0; i < 4; i++) {
         if (by[i] >= 0 && by[i] < BOARD_HEIGHT && bx[i] >= 0 && bx[i] < BOARD_WIDTH) {
             /* Restore board cell if not occupied */
             if (board[by[i]][bx[i]] == 0) {
-                set_bkg_tiles(BOARD_OFFSET_X + bx[i], BOARD_OFFSET_Y + by[i], 1, 1, &tile);
+                set_tile_with_palette(BOARD_OFFSET_X + bx[i], BOARD_OFFSET_Y + by[i], TILE_BLANK, 0);
             }
         }
     }
@@ -260,11 +311,12 @@ void render_hold_piece(uint8_t hold_type) {
     int8_t bx[4], by[4];
     uint8_t i;
     unsigned char tile;
+    uint8_t palette;
 
     /* Clear 5x3 area at (x=13, y=5) */
     for (r = 0; r < 3; r++) {
         for (c = 0; c < 5; c++) {
-            set_bkg_tiles(13 + c, 5 + r, 1, 1, &TILE_BLANK);
+            set_tile_with_palette(13 + c, 5 + r, TILE_BLANK, 0);
         }
     }
 
@@ -277,8 +329,9 @@ void render_hold_piece(uint8_t hold_type) {
     piece_get_blocks(&dummy, bx, by);
 
     tile = hold_type + 1;
+    palette = hold_type + 1;
     for (i = 0; i < 4; i++) {
-        set_bkg_tiles(14 + bx[i], 5 + by[i], 1, 1, &tile);
+        set_tile_with_palette(14 + bx[i], 5 + by[i], tile, palette);
     }
 }
 
@@ -288,11 +341,12 @@ void render_next_piece(uint8_t next_type) {
     int8_t bx[4], by[4];
     uint8_t i;
     unsigned char tile;
+    uint8_t palette;
 
     /* Clear 5x3 area at (x=13, y=10) */
     for (r = 0; r < 3; r++) {
         for (c = 0; c < 5; c++) {
-            set_bkg_tiles(13 + c, 10 + r, 1, 1, &TILE_BLANK);
+            set_tile_with_palette(13 + c, 10 + r, TILE_BLANK, 0);
         }
     }
 
@@ -303,8 +357,9 @@ void render_next_piece(uint8_t next_type) {
     piece_get_blocks(&dummy, bx, by);
 
     tile = next_type + 1;
+    palette = next_type + 1;
     for (i = 0; i < 4; i++) {
-        set_bkg_tiles(14 + bx[i], 10 + by[i], 1, 1, &tile);
+        set_tile_with_palette(14 + bx[i], 10 + by[i], tile, palette);
     }
 }
 
@@ -312,11 +367,11 @@ void render_line_clear_flicker(const uint8_t *full_rows, uint8_t num_full) {
     uint8_t f, i, c, w;
 
     for (f = 0; f < 3; f++) {
-        /* Flash ON: solid border tile */
+        /* Flash ON: solid border tile with Gold palette (4) */
         for (i = 0; i < num_full; i++) {
             uint8_t r = full_rows[i];
             for (c = 0; c < BOARD_WIDTH; c++) {
-                set_bkg_tiles(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, 1, 1, &TILE_BORDER);
+                set_tile_with_palette(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, TILE_BORDER, 4);
             }
         }
         for (w = 0; w < 3; w++) vsync();
@@ -325,7 +380,7 @@ void render_line_clear_flicker(const uint8_t *full_rows, uint8_t num_full) {
         for (i = 0; i < num_full; i++) {
             uint8_t r = full_rows[i];
             for (c = 0; c < BOARD_WIDTH; c++) {
-                set_bkg_tiles(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, 1, 1, &TILE_BLANK);
+                set_tile_with_palette(BOARD_OFFSET_X + c, BOARD_OFFSET_Y + r, TILE_BLANK, 0);
             }
         }
         for (w = 0; w < 3; w++) vsync();
@@ -339,12 +394,12 @@ void render_ui(uint16_t score, uint16_t lines, uint8_t game_state) {
     }
 
     if (game_state == GAME_STATE_PAUSED) {
-        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 5, "  PAUSED  ");
-        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "STRT RESUM");
-        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "SEL RESTAR");
+        render_print_string_pal(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 5, "  PAUSED  ", 4);
+        render_print_string_pal(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "STRT RESUM", 0);
+        render_print_string_pal(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "SEL RESTAR", 0);
     } else if (game_state == GAME_STATE_GAME_OVER) {
-        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "GAME OVER ");
-        render_print_string(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "PRESS STRT");
+        render_print_string_pal(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 7, "GAME OVER ", 7);
+        render_print_string_pal(BOARD_OFFSET_X + 1, BOARD_OFFSET_Y + 9, "PRESS STRT", 0);
     }
 }
 
